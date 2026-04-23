@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKER_HUB_USERNAME: "/codebuild/dockerhub/username"
+    DOCKER_HUB_PASSWORD: "/codebuild/dockerhub/password"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+
+  pre_build:
+    commands:
+      - echo "Logging in to Docker Hub"
+      - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+
+  build:
+    commands:
+      - echo "Building image"
+      - docker build -t $DOCKER_HUB_USERNAME/flask-codebuild-app:latest .
+
+  post_build:
+    commands:
+      - echo "Pushing image"
+      - docker push $DOCKER_HUB_USERNAME/flask-codebuild-app:latest
+
+artifacts:
+  files:
+    - '**/*'
